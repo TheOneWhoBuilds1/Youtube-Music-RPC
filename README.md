@@ -15,8 +15,11 @@ py -m pip install pypresence ytmusicapi pygetwindow
 ```
 ## How to Run
 1. Download or clone this repository.
-2. Open **PowerShell** or **Command Prompt** inside the project folder.
-3. Start the script:
+2. Go to https://discord.com/developers/applications and make a new application.
+3. Copy it's Application ID and paste it into the CLIENT_ID field in the script
+4. Save the script.
+5. Open **PowerShell** or **Command Prompt** inside the project folder.
+6. Start the script:
 
 ```powershell
 py main.py
