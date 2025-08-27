@@ -14,14 +14,14 @@ Works with Opera GX and most other browsers.
 py -m pip install pypresence ytmusicapi pygetwindow
 ```
 ## How to Run
-## 1. Download or clone this repository.
-## 2. Open ## PowerShell or ## Command Prompt inside the project folder.
-## 3. Start the script:
+1. Download or clone this repository.
+2. Open **PowerShell** or **Command Prompt** inside the project folder.
+3. Start the script:
 
 ```powershell
 py main.py
 ```
-Once running, your Discord profile will automatically update with your current ## YouTube Music track.
+Once running, your Discord profile will automatically update with your current **YouTube Music track.**
 
 ## Known Issues
 - Sometimes the RPC may report a different song than the one actually playing.
