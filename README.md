@@ -29,6 +29,7 @@ Once running, your Discord profile will automatically update with your current *
 ## Known Issues
 - Sometimes the RPC may report a different song than the one actually playing.
 - Cover art may not always fetch properly depending on availability.
+- Clickable “Listen on YouTube Music” button doesn't work.
 
 ## Notes
 - Uses ytmusicapi for fetching metadata.
