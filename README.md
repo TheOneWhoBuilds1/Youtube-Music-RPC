@@ -11,7 +11,7 @@ Works with Opera GX and most other browsers.
 - The following Python packages:
 
 ```powershell
-py -m pip install pypresence ytmusicapi pygetwindow
+py -m pip install pypresence ytmusicapi pygetwindow pywinauto
 ```
 ## How to Run
 1. Download or clone this repository.
