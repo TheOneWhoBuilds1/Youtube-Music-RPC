@@ -1,22 +1,29 @@
 import time
 import re
 import logging
+import json
+import webbrowser
 from pathlib import Path
 from typing import Optional, Dict, Any
 from dataclasses import dataclass
 from pypresence import Presence, DiscordNotFound, InvalidPipe
-from ytmusicapi import YTMusic
+from ytmusicapi import YTMusic, OAuthCredentials
 
 # Configuration
 @dataclass
 class Config:
     """Configuration for the Discord Rich Presence script."""
-    CLIENT_ID: str = '123456789'
-    UPDATE_INTERVAL: float = 5.0
+    CLIENT_ID: str = 'YOUR_DISCORD_APPLICATION_ID'
+    UPDATE_INTERVAL: float = 2.0
     LOG_LEVEL: str = 'INFO'
-    HEADERS_FILE: str = 'headers_auth.json'
+    OAUTH_FILE: str = 'oauth.json'
     MAX_RETRIES: int = 3
     RETRY_DELAY: float = 5.0
+    
+    # YouTube Music OAuth credentials
+    # You need to get these from Google Cloud Console
+    YOUTUBE_CLIENT_ID: str = 'YOUR_GOOGLE_CLIENT_ID'
+    YOUTUBE_CLIENT_SECRET: str = 'YOUR_GOOGLE_CLIENT_SECRET'
 
 # Setup logging
 def setup_logging(level: str = 'INFO'):
@@ -36,7 +43,70 @@ class TrackInfo:
     album: Optional[str] = None
     url: Optional[str] = None
     artwork: Optional[str] = None
+
+class OAuthManager:
+    """Handles OAuth authentication for YouTube Music."""
     
+    def __init__(self, oauth_file: str, client_id: str, client_secret: str, logger):
+        self.oauth_file = Path(oauth_file)
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.logger = logger
+        
+    def load_oauth_credentials(self) -> Optional[Dict[str, Any]]:
+        """Load OAuth credentials from file."""
+        try:
+            if self.oauth_file.exists():
+                with open(self.oauth_file, 'r') as f:
+                    return json.load(f)
+        except Exception as e:
+            self.logger.error(f"Failed to load OAuth credentials: {e}")
+        return None
+    
+    def save_oauth_credentials(self, credentials: Dict[str, Any]):
+        """Save OAuth credentials to file."""
+        try:
+            with open(self.oauth_file, 'w') as f:
+                json.dump(credentials, f, indent=2)
+            self.logger.info(f"OAuth credentials saved to {self.oauth_file}")
+        except Exception as e:
+            self.logger.error(f"Failed to save OAuth credentials: {e}")
+    
+    def setup_oauth(self) -> bool:
+        """Setup OAuth authentication interactively."""
+        if not self.client_id or not self.client_secret:
+            self.logger.error("YouTube Music OAuth credentials not configured!")
+            self.logger.error("Please set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET in the Config class")
+            self.logger.error("Get these from Google Cloud Console: https://console.cloud.google.com/")
+            return False
+            
+        self.logger.info("Setting up OAuth authentication...")
+        self.logger.info("Please follow the instructions to authenticate with YouTube Music:")
+        
+        try:
+            # Create OAuth credentials object
+            oauth_creds = OAuthCredentials(
+                client_id=self.client_id,
+                client_secret=self.client_secret
+            )
+            
+            # Initialize YTMusic with OAuth credentials to trigger the auth flow
+            ytmusic_temp = YTMusic(oauth_credentials=oauth_creds)
+            
+            # If we get here, authentication was successful
+            # The oauth tokens should be automatically saved
+            self.logger.info("✅ OAuth setup completed successfully!")
+            return True
+                
+        except Exception as e:
+            self.logger.error(f"OAuth setup failed: {e}")
+            self.logger.info("Please try the following steps:")
+            self.logger.info("1. Make sure you have the latest version of ytmusicapi: pip install --upgrade ytmusicapi")
+            self.logger.info("2. Ensure your client_id and client_secret are correct")
+            self.logger.info("3. Make sure the YouTube Data API v3 is enabled in your Google Cloud project")
+            self.logger.info("4. Restart the application")
+            return False
+
 class YouTubeMusicRPC:
     """Main class for YouTube Music Discord Rich Presence."""
     
@@ -45,29 +115,75 @@ class YouTubeMusicRPC:
         self.logger = setup_logging(config.LOG_LEVEL)
         self.rpc: Optional[Presence] = None
         self.ytmusic: Optional[YTMusic] = None
+        self.oauth_manager = OAuthManager(
+            config.OAUTH_FILE, 
+            config.YOUTUBE_CLIENT_ID, 
+            config.YOUTUBE_CLIENT_SECRET, 
+            self.logger
+        )
         
         self.last_track_id: Optional[str] = None
         self.start_timestamp: Optional[int] = None
         self.connection_retries = 0
 
     def initialize_ytmusic(self):
-        """Initialize YouTube Music API with error handling."""
+        """Initialize YouTube Music API with OAuth authentication."""
         try:
-            headers_path = Path(self.config.HEADERS_FILE)
-            if not headers_path.exists():
-                self.logger.error(f"Authentication file '{self.config.HEADERS_FILE}' not found. "
-                                  "Please run 'ytmusicapi headers_auth' to generate it.")
+            # Check if OAuth credentials are configured
+            if not self.config.YOUTUBE_CLIENT_ID or not self.config.YOUTUBE_CLIENT_SECRET:
+                self.logger.error("YouTube Music OAuth credentials not configured!")
+                self.logger.error("Please set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET in the Config class")
+                self.logger.error("Get these from Google Cloud Console: https://console.cloud.google.com/")
                 return False
+            
+            # Try to initialize YTMusic with OAuth
+            try:
+                oauth_creds = OAuthCredentials(
+                    client_id=self.config.YOUTUBE_CLIENT_ID,
+                    client_secret=self.config.YOUTUBE_CLIENT_SECRET
+                )
                 
-            self.ytmusic = YTMusic(str(headers_path))
-            self.logger.info("YouTube Music API initialized.")
-            return True
+                # Try to load existing oauth.json if it exists
+                if self.oauth_manager.oauth_file.exists():
+                    self.ytmusic = YTMusic(
+                        auth=str(self.oauth_manager.oauth_file),
+                        oauth_credentials=oauth_creds
+                    )
+                else:
+                    # First time setup - this will trigger the OAuth flow
+                    self.logger.info("First time setup - starting OAuth authentication...")
+                    self.ytmusic = YTMusic(oauth_credentials=oauth_creds)
+                
+                # Test the connection by trying to get history
+                test_history = self.ytmusic.get_history()
+                self.logger.info("✅ YouTube Music API initialized with OAuth")
+                return True
+                
+            except Exception as auth_error:
+                self.logger.warning(f"Authentication failed: {auth_error}")
+                self.logger.info("This might be your first time using OAuth or tokens may have expired")
+                self.logger.info("Starting fresh OAuth setup...")
+                
+                # Remove old credentials and try fresh setup
+                if self.oauth_manager.oauth_file.exists():
+                    self.oauth_manager.oauth_file.unlink()
+                
+                if self.oauth_manager.setup_oauth():
+                    # Try again with fresh OAuth
+                    oauth_creds = OAuthCredentials(
+                        client_id=self.config.YOUTUBE_CLIENT_ID,
+                        client_secret=self.config.YOUTUBE_CLIENT_SECRET
+                    )
+                    
+                    self.ytmusic = YTMusic(oauth_credentials=oauth_creds)
+                    self.logger.info("✅ YouTube Music API initialized with fresh OAuth")
+                    return True
+                else:
+                    return False
+            
         except Exception as e:
             self.logger.error(f"Failed to initialize YouTube Music API: {e}")
-            self.logger.error("Check your network connection or the headers_auth.json file.")
-            return False
-        except Exception as e:
-            self.logger.error(f"An unexpected error occurred during YTMusic initialization: {e}")
+            self.logger.error("Please check your internet connection and OAuth credentials")
             return False
     
     def get_playing_track(self) -> Optional[TrackInfo]:
@@ -107,6 +223,13 @@ class YouTubeMusicRPC:
             
         except Exception as e:
             self.logger.error(f"Failed to get track from API: {e}")
+            
+            # If we get authentication errors, try to re-initialize
+            if "authentication" in str(e).lower() or "unauthorized" in str(e).lower():
+                self.logger.warning("Authentication error detected, attempting to re-authenticate...")
+                if self.initialize_ytmusic():
+                    return self.get_playing_track()
+            
             return None
 
     def connect_discord(self) -> bool:
@@ -173,10 +296,10 @@ class YouTubeMusicRPC:
 
     def run(self):
         """Main event loop."""
-        self.logger.info("🎵 Starting YouTube Music Discord RPC (API Mode)")
+        self.logger.info("🎵 Starting YouTube Music Discord RPC (OAuth Mode)")
         
         if not self.initialize_ytmusic():
-            self.logger.error("Failed to initialize YTMusic API. Exiting.")
+            self.logger.error("Failed to initialize YTMusic API with OAuth. Exiting.")
             return
         
         if not self.connect_discord():
