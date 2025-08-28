@@ -2,7 +2,7 @@
 
 Display your currently playing YouTube Music tracks directly in your Discord status with album artwork and track information.
 
-![Discord Status Preview]([https://via.placeholder.com/400x100/7289da/ffffff?text=Now+Playing+on+YouTube+Music](https://theonewhobuilds1.linus-tech.tips/ttUUaqpmDU.png)
+![Discord Status Preview](https://theonewhobuilds1.linus-tech.tips/ttUUaqpmDU.png)
 
 ## ✨ Features
 
