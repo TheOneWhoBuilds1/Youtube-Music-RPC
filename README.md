@@ -2,11 +2,11 @@
 
 Display your currently playing YouTube Music tracks directly in your Discord status with album artwork and track information.
 
-![Discord Status Preview](https://via.placeholder.com/400x100/7289da/ffffff?text=Now+Playing+on+YouTube+Music)
+![Discord Status Preview]([https://via.placeholder.com/400x100/7289da/ffffff?text=Now+Playing+on+YouTube+Music](https://theonewhobuilds1.linus-tech.tips/ttUUaqpmDU.png))
 
 ## ✨ Features
 
-- 🎵 **Real-time status updates** - Shows current track, artist, and album
+- 🎵 **Real-time status updates** - Shows current track and artist
 - 🖼️ **Album artwork display** - Beautiful cover art in your Discord profile
 - 🌐 **Browser compatibility** - Works with any modern web browser
 - 🔄 **Automatic sync** - Updates instantly when you change tracks
@@ -23,7 +23,7 @@ Display your currently playing YouTube Music tracks directly in your Discord sta
 
 ### 1. Install Dependencies
 ```bash
-pip install pypresence ytmusicapi
+py -m pip install pypresence ytmusicapi
 ```
 
 ### 2. Download the Project
@@ -43,8 +43,9 @@ cd youtube-music-rpc
 ### 4. Setup YouTube Music Authentication
 
 #### Generate Authentication Headers:
+(make sure you're cd'd into the python installation folder, otherwhise this command won't work)
 ```bash
-ytmusicapi browser
+py ytmusicapi browser
 ```
 
 #### Capture Browser Headers:
@@ -98,7 +99,7 @@ youtube-music-rpc/
 
 **"No module named 'pypresence'"**
 ```bash
-pip install --upgrade pypresence ytmusicapi
+py -m pip install --upgrade pypresence ytmusicapi
 ```
 
 **"Authentication failed"**
