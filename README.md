@@ -45,7 +45,7 @@ cd youtube-music-rpc
 #### Generate Authentication Headers:
 (make sure you're cd'd into the python installation folder, otherwhise this command won't work)
 ```bash
-py ytmusicapi browser
+ytmusicapi browser
 ```
 
 #### Capture Browser Headers:
