@@ -4,6 +4,8 @@ This script connects your YouTube Music listening activity to Discord, updating 
 
 ![Discord Status Preview](https://theonewhobuilds1.linus-tech.tips/ttUUaqpmDU.png)
 
+forgot to mention you have to have Python 3.17.7 or newer installed
+
 ## ✨ Features
 
 - **Automatic Updates**: Automatically detects and displays the song you're playing.
