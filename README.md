@@ -4,7 +4,8 @@ This script connects your YouTube Music listening activity to Discord, updating 
 
 ![Discord Status Preview](https://theonewhobuilds1.linus-tech.tips/ttUUaqpmDU.png)
 
-forgot to mention you have to have Python 3.13.7 or newer installed
+forgot to mention you have to have Python 3.13.7 or newer installed.
+
 btw to gen the auth keys you need to cd into your python install directory's scripts and run the ytmusicapi.exe file from powershell like this: .\ytmusic oauth
 
 ## ✨ Features
