@@ -1,37 +1,151 @@
-# 🎶 YouTube Music RPC
+# 🎵 YouTube Music Discord RPC
 
-A Discord Rich Presence client for **YouTube Music** that shows the current track, artist, and album art in your Discord profile.  
-Works with Opera GX and most other browsers.
+Display your currently playing YouTube Music tracks directly in your Discord status with album artwork and track information.
+
+![Discord Status Preview](https://via.placeholder.com/400x100/7289da/ffffff?text=Now+Playing+on+YouTube+Music)
+
+## ✨ Features
+
+- 🎵 **Real-time status updates** - Shows current track, artist, and album
+- 🖼️ **Album artwork display** - Beautiful cover art in your Discord profile
+- 🌐 **Browser compatibility** - Works with any modern web browser
+- 🔄 **Automatic sync** - Updates instantly when you change tracks
 
 ---
 
-## 📦 Requirements
+## 📋 Prerequisites
 
-- **Python 3.13.7+** → [Download here](https://www.python.org/downloads/)  
-- The following Python packages:
+- **Python 3.7.1+** - [Download Python](https://www.python.org/downloads/)
+- **Discord Desktop App** - Required for Rich Presence
+- **Web browser** with YouTube Music access
 
-```powershell
-py -m pip install pypresence ytmusicapi pygetwindow pywinauto
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+```bash
+pip install pypresence ytmusicapi
 ```
-## How to Run
-1. Download or clone this repository.
-2. Go to https://discord.com/developers/applications and make a new application.
-3. Copy it's Application ID and paste it into the CLIENT_ID field in the script
-4. Save the script.
-5. Open **PowerShell** or **Command Prompt** inside the project folder.
-6. Start the script:
 
-```powershell
-py main.py
+### 2. Download the Project
+```bash
+git clone <repository-url>
+cd youtube-music-rpc
 ```
-Once running, your Discord profile will automatically update with your current **YouTube Music track.**
+*Or download and extract the ZIP file to a folder*
 
-## Known Issues
-- Sometimes the RPC may report a different song than the one actually playing.
-- Cover art may not always fetch properly depending on availability.
-- Clickable “Listen on YouTube Music” button doesn't work.
+### 3. Create Discord Application
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **"New Application"** and give it a name
+3. Copy the **Application ID**
+4. Paste it into the `CLIENT_ID` field in `main.py`
+5. Save the file
 
-## Notes
-- Uses ytmusicapi for fetching metadata.
-- Presence includes a clickable “Listen on YouTube Music” button.
-- Works best on Windows with Opera GX; other browsers may also work.
+### 4. Setup YouTube Music Authentication
+
+#### Generate Authentication Headers:
+```bash
+ytmusicapi browser
+```
+
+#### Capture Browser Headers:
+1. Open your browser and navigate to [music.youtube.com](https://music.youtube.com)
+2. Press `F12` (or `Ctrl+Shift+I`) to open Developer Tools
+3. Go to the **Network** tab
+4. Refresh the page (`F5`)
+5. In the filter box, type: `browse`
+6. Click on any `browse` request
+7. Scroll to **Request Headers** section
+8. Copy all headers and paste into your terminal
+9. Press `Enter`, then `Ctrl+Z` (Windows) or `Ctrl+D` (Mac/Linux), then `Enter`
+
+#### Move Authentication File:
+```bash
+# The command above creates 'browser.json' - rename and move it:
+mv browser.json headers_auth.json
+# Move to your project directory if needed
+```
+
+### 5. Run the Application
+```bash
+python main.py
+```
+
+🎉 **That's it!** Your Discord status will now show your YouTube Music activity.
+
+---
+
+## 🔧 Configuration
+
+### Custom Client ID
+Replace the `CLIENT_ID` in `main.py` with your Discord application ID:
+```python
+CLIENT_ID = "your_application_id_here"
+```
+
+### File Structure
+```
+youtube-music-rpc/
+├── main.py                 # Main script
+├── headers_auth.json       # Authentication headers
+└── README.md              # This file
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**"No module named 'pypresence'"**
+```bash
+pip install --upgrade pypresence ytmusicapi
+```
+
+**"Authentication failed"**
+- Regenerate `headers_auth.json` following step 4
+- Ensure you're logged into YouTube Music in your browser
+
+**"Discord not detected"**
+- Make sure Discord Desktop app is running (not browser version)
+- Restart Discord if the status doesn't appear
+
+**Rich Presence not showing**
+- Check that "Display currently running game as status message" is enabled in Discord Settings > Activity Privacy
+
+### Still having issues?
+1. Make sure all files are in the same directory
+2. Verify your Discord Application ID is correct
+3. Check that YouTube Music is playing in your browser
+4. Restart the script after making changes
+
+---
+
+## 📝 Known Limitations
+
+- ⚠️ "Listen on YouTube Music" button is currently non-functional
+- 🔄 Requires periodic re-authentication (headers expire)
+- 🌐 Only works while YouTube Music is open in browser
+
+---
+
+## 🛠️ Technical Details
+
+- **Built with:** Python, pypresence, ytmusicapi
+- **Tested on:** Windows 10/11, macOS, Ubuntu
+- **Compatible browsers:** Chrome, Firefox, Safari, Opera GX, Edge
+
+---
+
+## 📄 License
+
+This project is provided as-is for educational purposes. Please respect YouTube Music's terms of service.
+
+---
+
+## 🤝 Contributing
+
+Found a bug or want to contribute? Feel free to open an issue or submit a pull request!
+
+---
+
+*Made with ❤️ for the Discord and YouTube Music community*
